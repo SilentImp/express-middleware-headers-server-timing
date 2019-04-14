@@ -4,12 +4,12 @@ Middleware for express.js to add server timing headers
 
 # Installation
 
-    npm i -S server-timing
+    npm i -S server-timing-header
 
 # Usage
 
 ```javascript
-const serverTiming = require('server-timing');
+const serverTiming = require('server-timing-header');
 const port = 3000;
 const app = express();
 app.use(serverTimingMiddleware);

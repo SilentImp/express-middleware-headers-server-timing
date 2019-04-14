@@ -52,6 +52,18 @@ class ServerTiming {
    * @public
    * @param {string} name — metric name
    * @throw {Error} — throw an error if name is not valid
+   * @example <caption>You may define only start time for metric</caption>
+   * const serverTiming = require('server-timing-header');
+   * const port = 3000;
+   * const app = express();
+   * app.use(serverTimingMiddleware);
+   * app.get('/', function (req, res, next) {
+   *   // If you define only start time for metric,
+   *   // then as the end time will be used header sent time
+   *   req.serverTiming.from('metric');
+   *   // fetching data from database
+   * });
+   * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
   from(name) {
     this.set(name, "from", process.hrtime());
@@ -62,6 +74,18 @@ class ServerTiming {
    * @public
    * @param {string} name — metric name
    * @throw {Error} — throw an error if name is not valid
+   * @example <caption>You may define only end time for metric</caption>
+   * const serverTiming = require('server-timing-header');
+   * const port = 3000;
+   * const app = express();
+   * app.use(serverTimingMiddleware);
+   * app.get('/', function (req, res, next) {
+   *   // fetching data from database
+   *   // If you define only end time for metric,
+   *   // then as the start time will be used middleware initialization time
+   *   req.serverTiming.to('metric');
+   * });
+   * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
   to(name) {
     this.set(name, "to", process.hrtime());
@@ -104,6 +128,16 @@ class ServerTiming {
    * @param {string} description — metric description
    * @param {number} duration — metric duration
    * @throw {Error} — throw an error if name contains invalid characters
+   * @example <caption>Send separate header</caption>
+   * const serverTiming = require('server-timing-header');
+   * const port = 3000;
+   * const app = express();
+   * app.use(serverTimingMiddleware);
+   * app.get('/', function (req, res, next) {
+   *   // You got time metric from the external source
+   *   req.serverTiming.send(res, 'metric', 'metric description', 52.3);
+   * });
+   * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
   send(response, name, description, duration = 0.0) {
     if (!ServerTiming.nameIsValid(name)) throw new Error(INVALID_NAME);
@@ -118,6 +152,17 @@ class ServerTiming {
    * @private
    * @param {object} response — express.js response object
    * @see https://expressjs.com/en/4x/api.html#res
+   * @example <caption>How to add middleware</caption>
+   * const serverTiming = require('server-timing-header');
+   * const port = 3000;
+   * const app = express();
+   * app.use(serverTimingMiddleware);
+   * app.get('/', function (req, res, next) {
+   *   req.serverTiming.from('db');
+   *   // fetching data from database
+   *   req.serverTiming.to('db');
+   * });
+   * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
   addHeaders(response) {
     if (response.headerSent) throw new Error(HEADERS_SENT);
@@ -217,7 +262,7 @@ class ServerTiming {
  * make sure that we will send this headers before express finish request
  * @exports serverTimingMiddleware
  * @example <caption>How to add middleware</caption>
- * const serverTiming = require('server-timing');
+ * const serverTiming = require('server-timing-header');
  * const port = 3000;
  * const app = express();
  * app.use(serverTimingMiddleware);
