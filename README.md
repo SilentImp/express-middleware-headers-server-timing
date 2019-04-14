@@ -37,15 +37,17 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`));
         -   [Examples](#examples-1)
     -   [description](#description)
         -   [Parameters](#parameters-2)
-    -   [send](#send)
+    -   [duration](#duration)
         -   [Parameters](#parameters-3)
+    -   [add](#add)
+        -   [Parameters](#parameters-4)
         -   [Examples](#examples-2)
     -   [oldStyle](#oldstyle)
-        -   [Parameters](#parameters-4)
-    -   [newStyle](#newstyle)
         -   [Parameters](#parameters-5)
+    -   [newStyle](#newstyle)
+        -   [Parameters](#parameters-6)
 -   [index](#index)
-    -   [Parameters](#parameters-6)
+    -   [Parameters](#parameters-7)
     -   [Examples](#examples-3)
 
 ## ServerTiming
@@ -128,9 +130,18 @@ Add description to specific metric
 -   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — metric name
 -   `description` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — description of the metric
 
-### send
+### duration
 
-Imidiately send server-timing header for specific metric
+Add duration to specific metric
+
+#### Parameters
+
+-   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — metric name
+-   `duration` **float** — duration of the metric
+
+### add
+
+Add metric
 
 #### Parameters
 
@@ -141,7 +152,7 @@ Imidiately send server-timing header for specific metric
 
 #### Examples
 
-Send separate header
+Add metric
 
 
 ```javascript
@@ -151,7 +162,7 @@ const app = express();
 app.use(serverTimingMiddleware);
 app.get('/', function (req, res, next) {
   // You got time metric from the external source
-  req.serverTiming.send(res, 'metric', 'metric description', 52.3);
+  req.serverTiming.add(res, 'metric', 'metric description', 52.3);
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```

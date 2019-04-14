@@ -103,6 +103,17 @@ class ServerTiming {
   }
 
   /**
+   * Add duration to specific metric
+   * @public
+   * @param {string} name — metric name
+   * @param {float} duration — duration of the metric
+   * @throw {Error} — throw an error if name is not valid
+   */
+  duration(name, duration) {
+    this.set(name, "duration", duration);
+  }
+
+  /**
    * Add property for metric
    * or create new metric with this property
    * if metric with this name not found
@@ -122,29 +133,29 @@ class ServerTiming {
   }
 
   /**
-   * Imidiately send server-timing header for specific metric
+   * Add metric
    * @param {object} response — express.js response object
    * @param {string} name - metric name
    * @param {string} description — metric description
    * @param {number} duration — metric duration
    * @throw {Error} — throw an error if name contains invalid characters
-   * @example <caption>Send separate header</caption>
+   * @example <caption>Add metric</caption>
    * const serverTiming = require('server-timing-header');
    * const port = 3000;
    * const app = express();
    * app.use(serverTimingMiddleware);
    * app.get('/', function (req, res, next) {
    *   // You got time metric from the external source
-   *   req.serverTiming.send(res, 'metric', 'metric description', 52.3);
+   *   req.serverTiming.add(res, 'metric', 'metric description', 52.3);
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  send(response, name, description, duration = 0.0) {
+  add(response, name, description, duration = 0.0) {
     if (!ServerTiming.nameIsValid(name)) throw new Error(INVALID_NAME);
-    const header = this.oldSpecification
-      ? ServerTiming.oldStyle(name, description, duration)
-      : ServerTiming.newStyle(name, description, duration);
-    response.set("server-timing", header);
+    this.metrics[name] = {
+      description,
+      duration
+    };
   }
 
   /**
@@ -169,14 +180,15 @@ class ServerTiming {
     const now = process.hrtime();
     const metrics = Object.entries(this.metrics).reduce(
       (collector, element) => {
-        const [name, { from, to, description }] = element;
+        const [name, { from, to, description, duration }] = element;
         collector.push(
           ServerTiming.buildHeader(
             {
               name,
               description: description || name,
               from: from || this.initialized,
-              to: to || now
+              to: to || now,
+              duration
             },
             this.oldSpecification
           )
@@ -227,15 +239,15 @@ class ServerTiming {
    * @return {string} — header value with timings for specific metric
    */
   static buildHeader(
-    { name, description, from, to },
+    { name, description, from, to, duration },
     oldSpecification = false
   ) {
     const fromTime = parseInt(from[0] * 1e3 + from[1] * 1e-6, 10);
     const toTime = parseInt(to[0] * 1e3 + to[1] * 1e-6, 10);
-    const duration = toTime - fromTime;
+    const time = duration || toTime - fromTime;
     return oldSpecification
-      ? ServerTiming.oldStyle(name, description, duration)
-      : ServerTiming.newStyle(name, description, duration);
+      ? ServerTiming.oldStyle(name, description, time)
+      : ServerTiming.newStyle(name, description, time);
   }
 
   /**
