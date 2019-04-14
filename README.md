@@ -28,7 +28,6 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ### Table of Contents
 
 -   [ServerTiming](#servertiming)
-    -   [initialized](#initialized)
     -   [from](#from)
         -   [Parameters](#parameters)
         -   [Examples](#examples)
@@ -60,13 +59,6 @@ Middleware for express.js to add Server Timing headers
 
 -   **author**: Anton Nemtsev &lt;thesilentimp@gmail.com>
 
-### initialized
-
-If start time is not specified for metric
-we will use time of middleware initialization
-
-Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;integer>
-
 ### from
 
 Set start time for metric
@@ -74,6 +66,7 @@ Set start time for metric
 #### Parameters
 
 -   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — metric name
+-   `description` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** — description of the metric
 
 #### Examples
 
@@ -88,7 +81,7 @@ app.use(serverTimingMiddleware);
 app.get('/', function (req, res, next) {
   // If you define only start time for metric,
   // then as the end time will be used header sent time
-  req.serverTiming.from('metric');
+  req.serverTiming.from('metric', 'metric description');
   // fetching data from database
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
@@ -101,6 +94,7 @@ Set end time for metric
 #### Parameters
 
 -   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — metric name
+-   `description` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** — description of the metric
 
 #### Examples
 

@@ -16,7 +16,7 @@ class ServerTiming {
   /**
    * Create server timing controller
    * @constructor
-   * @param {string} userAgent — string that contain user agent description
+   * @param {string} [userAgent] — string that contain user agent description
    */
   constructor(userAgent = "") {
     // Before 64 version Chrome support old server-timing
@@ -31,6 +31,7 @@ class ServerTiming {
     /**
      * If start time is not specified for metric
      * we will use time of middleware initialization
+     * @private
      * @type {integer[]} - time of middleware initialization [seconds, nanoseconds]
      */
     this.initialized = process.hrtime();
@@ -51,6 +52,7 @@ class ServerTiming {
    * Set start time for metric
    * @public
    * @param {string} name — metric name
+   * @param {string} [description] — description of the metric
    * @throw {Error} — throw an error if name is not valid
    * @example <caption>You may define only start time for metric</caption>
    * const serverTiming = require('server-timing-header');
@@ -60,19 +62,21 @@ class ServerTiming {
    * app.get('/', function (req, res, next) {
    *   // If you define only start time for metric,
    *   // then as the end time will be used header sent time
-   *   req.serverTiming.from('metric');
+   *   req.serverTiming.from('metric', 'metric description');
    *   // fetching data from database
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  from(name) {
+  from(name, description) {
     this.set(name, "from", process.hrtime());
+    if (description) this.description.call(this, name, description);
   }
 
   /**
    * Set end time for metric
    * @public
    * @param {string} name — metric name
+   * @param {string} [description] — description of the metric
    * @throw {Error} — throw an error if name is not valid
    * @example <caption>You may define only end time for metric</caption>
    * const serverTiming = require('server-timing-header');
@@ -87,8 +91,9 @@ class ServerTiming {
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  to(name) {
+  to(name, description) {
     this.set(name, "to", process.hrtime());
+    if (description) this.description.call(this, name, description);
   }
 
   /**
