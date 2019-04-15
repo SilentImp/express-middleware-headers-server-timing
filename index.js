@@ -191,7 +191,7 @@ class ServerTiming {
           ServerTiming.buildHeader(
             {
               name,
-              description: description || name,
+              description,
               from: from || this.initialized,
               to: to || now,
               duration
