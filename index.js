@@ -1,5 +1,6 @@
 const onHeaders = require("on-headers");
 
+const HEADER_NAME = "server-timing";
 const INVALID_NAME = "Name contain forbidden symbols";
 const HEADERS_SENT = "Headers was already sent and we can not add new headers";
 
@@ -202,7 +203,7 @@ class ServerTiming {
       },
       []
     );
-    if (metrics.trim().length > 0) response.set("server-timing", metrics);
+    if (metrics.trim().length > 0) response.set(HEADER_NAME, metrics);
     this.metrics = {};
   }
 
