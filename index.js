@@ -202,7 +202,7 @@ class ServerTiming {
       },
       []
     );
-    response.set("server-timing", metrics);
+    if (metrics.trim().length > 0) response.set("server-timing", metrics);
     this.metrics = {};
   }
 
