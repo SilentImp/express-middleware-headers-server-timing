@@ -203,7 +203,7 @@ class ServerTiming {
       },
       []
     );
-    if (metrics.trim().length > 0) response.set(HEADER_NAME, metrics);
+    if (metrics.length > 0) response.set(HEADER_NAME, metrics);
     this.metrics = {};
   }
 
