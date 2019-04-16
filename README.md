@@ -8,6 +8,8 @@ Middleware for express.js to add server timing headers
 
 # Usage
 
+You may measure time between two points:
+
 ```javascript
 const serverTiming = require('server-timing-header');
 const port = 3000;
@@ -20,6 +22,38 @@ app.get('/', function (req, res, next) {
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
+
+Or just add a metric:
+
+```javascript
+const serverTiming = require('server-timing-header');
+const port = 3000;
+const app = express();
+app.use(serverTimingMiddleware);
+app.get('/', function (req, res, next) {
+  // You got time metric from the external source
+  req.serverTiming.add('cache', 'Cache Read', 23.2);
+});
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+```
+
+And see in the Chrome DevTools:
+![screenshot](devtools.png)
+Also you may access metrics values from JavaScript on a client:
+
+```javascript
+['navigation', 'resource']
+        .forEach(function(entryType) {
+          performance.getEntriesByType(entryType).forEach(function({name: url, serverTiming}) {
+            serverTiming.forEach(function({name, duration, description}) {
+              console.info('expressjs middleware =',
+                JSON.stringify({url, entryType, name, duration, description}, null, 2))
+            })
+          })
+      })
+```
+
+![screenshot](console.png)
 
 # Documentation
 
