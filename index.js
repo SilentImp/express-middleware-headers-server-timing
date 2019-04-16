@@ -152,11 +152,11 @@ class ServerTiming {
    * app.use(serverTimingMiddleware);
    * app.get('/', function (req, res, next) {
    *   // You got time metric from the external source
-   *   req.serverTiming.add(res, 'metric', 'metric description', 52.3);
+   *   req.serverTiming.add('metric', 'metric description', 52.3);
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  add(response, name, description, duration = 0.0) {
+  add(name, description, duration = 0.0) {
     if (!ServerTiming.nameIsValid(name)) throw new Error(INVALID_NAME);
     this.metrics[name] = {
       description,
