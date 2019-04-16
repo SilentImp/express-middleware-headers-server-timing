@@ -140,7 +140,6 @@ class ServerTiming {
 
   /**
    * Add metric
-   * @param {object} response — express.js response object
    * @param {string} name - metric name
    * @param {string} description — metric description
    * @param {number} duration — metric duration

@@ -142,7 +142,6 @@ Add metric
 -   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** metric name
 -   `description` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — metric description
 -   `duration` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** — metric duration (optional, default `0.0`)
--   `response` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** — express.js response object
 
 #### Examples
 
