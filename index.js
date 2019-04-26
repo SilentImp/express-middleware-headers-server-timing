@@ -43,10 +43,65 @@ class ServerTiming {
      */
     this.metrics = {};
 
+    /**
+     * @private
+     * @type {array} - Array of callbacks
+     */
+    this.hooks = [];
+
     // We should keep consistent context for non static methods
     this.addHeaders = this.addHeaders.bind(this);
     this.from = this.from.bind(this);
     this.to = this.to.bind(this);
+  }
+
+  /**
+   * Add callback to modify data before create and send headers
+   * @public
+   * @param {string} name — hook name
+   * @param {function} callback — function that may modify data before send headers
+   * @param {number} callbackIndex - index that will be used to sort callbacks before execution
+   * @example <caption>Add hook to mutate the metrics</caption>
+   * const express = require('express');
+   * const serverTimingMiddleware = require('server-timing-header');
+   * const port = 3000;
+   * const app = express();
+   * app.use(serverTimingMiddleware);
+   * app.use(function (req, res, next) {
+   *   // If one measurement include other inside you may substract times
+   *   req.serverTiming.addHook('substractDataTimeFromRenderTime', function (metrics) {
+   *      const updated = { ...metrics };
+   *      if (updated.data && updated.render) {
+   *        const renderDuration  = req.serverTiming.calculateDurationSmart(updated.render);
+   *        const dataDuration  = req.serverTiming.calculateDurationSmart(updated.data);
+   *        updated.render.duration = Math.abs(renderDuration - dataDuration);
+   *      }
+   *      return updated;
+   *   });
+   * });
+   * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+   */
+  addHook(name, callback, callbackIndex) {
+    let index = callbackIndex;
+    if (index === undefined) {
+      index = this.hooks.length + 1;
+    }
+    this.hooks.push({
+      name,
+      callback,
+      index
+    });
+  }
+
+  /**
+   * Remove callback with specific name
+   * @public
+   * @param {string} name — hook name
+   */
+  removeHook(name) {
+    this.hooks = this.hooks.filter(
+      ({ name: callbackName }) => callbackName !== name
+    );
   }
 
   /**
@@ -56,7 +111,8 @@ class ServerTiming {
    * @param {string} [description] — description of the metric
    * @throw {Error} — throw an error if name is not valid
    * @example <caption>You may define only start time for metric</caption>
-   * const serverTiming = require('server-timing-header');
+   * const express = require('express');
+   * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
    * app.use(serverTimingMiddleware);
@@ -80,7 +136,8 @@ class ServerTiming {
    * @param {string} [description] — description of the metric
    * @throw {Error} — throw an error if name is not valid
    * @example <caption>You may define only end time for metric</caption>
-   * const serverTiming = require('server-timing-header');
+   * const express = require('express');
+   * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
    * app.use(serverTimingMiddleware);
@@ -145,7 +202,8 @@ class ServerTiming {
    * @param {number} duration — metric duration
    * @throw {Error} — throw an error if name contains invalid characters
    * @example <caption>Add metric</caption>
-   * const serverTiming = require('server-timing-header');
+   * const express = require('express');
+   * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
    * app.use(serverTimingMiddleware);
@@ -169,7 +227,8 @@ class ServerTiming {
    * @param {object} response — express.js response object
    * @see https://expressjs.com/en/4x/api.html#res
    * @example <caption>How to add middleware</caption>
-   * const serverTiming = require('server-timing-header');
+   * const express = require('express');
+   * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
    * app.use(serverTimingMiddleware);
@@ -182,8 +241,13 @@ class ServerTiming {
    */
   addHeaders(response) {
     if (response.headerSent) throw new Error(HEADERS_SENT);
-    const now = process.hrtime();
-    const metrics = Object.entries(this.metrics).reduce(
+    const updatedMetrics = this.hooks
+      .sort(({ index: indexA }, { index: indexB }) => indexA - indexB)
+      .map(({ callback }) => callback)
+      .reduce((metrics, callback) => {
+        return callback(metrics);
+      }, this.metrics);
+    const metrics = Object.entries(updatedMetrics).reduce(
       (collector, element) => {
         const [name, { from, to, description, duration }] = element;
         collector.push(
@@ -192,7 +256,7 @@ class ServerTiming {
               name,
               description,
               from: from || this.initialized,
-              to: to || now,
+              to: to || process.hrtime(),
               duration
             },
             this.oldSpecification
@@ -211,7 +275,7 @@ class ServerTiming {
    * @param {string} name - metric name
    * @param {string} description - metric description
    * @param {string} duration - metric duration
-   * @retur {string} — server-timing header value
+   * @return {string} — server-timing header value
    */
   static oldStyle(name, description, duration) {
     return `${name}${typeof duration !== "undefined" ? `=${duration}` : ""}${
@@ -224,7 +288,7 @@ class ServerTiming {
    * @param {string} name - metric name
    * @param {string} description - metric description
    * @param {string} duration - metric duration
-   * @retur {string} — server-timing header value
+   * @return {string} — server-timing header value
    */
   static newStyle(name, description, duration) {
     return `${name}${
@@ -234,8 +298,8 @@ class ServerTiming {
 
   /**
    * Build server timing headers
-   * @private
    * @static
+   * @private
    * @param {object} metric — object that contain metric information
    * @param {string} metric.name — metric name
    * @param {string} metric.description — metric description
@@ -244,15 +308,46 @@ class ServerTiming {
    * @return {string} — header value with timings for specific metric
    */
   static buildHeader(
-    { name, description, from, to, duration },
+    { name, description, duration, from, to },
     oldSpecification = false
   ) {
-    const fromTime = parseInt(from[0] * 1e3 + from[1] * 1e-6, 10);
-    const toTime = parseInt(to[0] * 1e3 + to[1] * 1e-6, 10);
-    const time = duration || toTime - fromTime;
+    const time = duration || ServerTiming.calculateDuration(from, to);
     return oldSpecification
       ? ServerTiming.oldStyle(name, description, time)
       : ServerTiming.newStyle(name, description, time);
+  }
+
+  /**
+   * Calculate duration between two timestamps, if from or two is undefined — will use initialization time and current time to replace
+   * @public
+   * @param {object} metric — object that contain metric information
+   * @param {string} metric.name — metric name
+   * @param {string} metric.description — metric description
+   * @param {integer[]} metric.from — start time [seconds, nanoseconds], if undefined, initialization time will be used
+   * @param {integer[]} metric.to — end time [seconds, nanoseconds], if undefined, current timestamp will be used
+   * @param {integer} metric.duration — time in milliseconds, if not undefined method will just return durations
+   * @return {integer} - duration in milliseconds
+   */
+  calculateDurationSmart(metric) {
+    const fromLabel = metric.from || this.initialized;
+    const toLabel = metric.to || process.hrtime();
+    return (
+      metric.duration || ServerTiming.calculateDuration(fromLabel, toLabel)
+    );
+  }
+
+  /**
+   * Calculate duration between two timestamps
+   * @static
+   * @private
+   * @param {integer[]} from — start time [seconds, nanoseconds]
+   * @param {integer[]} to — end time [seconds, nanoseconds]
+   * @return {integer} - duration in milliseconds
+   */
+  static calculateDuration(from, to) {
+    const fromTime = parseInt(from[0] * 1e3 + from[1] * 1e-6, 10);
+    const toTime = parseInt(to[0] * 1e3 + to[1] * 1e-6, 10);
+    return Math.abs(toTime - fromTime);
   }
 
   /**
@@ -262,8 +357,8 @@ class ServerTiming {
    * Digits, alphabet characters,
    * and !#$%&'*+-.^_`|~ are allowed
    *
-   * @private
    * @static
+   * @private
    * @see https://www.w3.org/TR/2019/WD-server-timing-20190307/#the-server-timing-header-field
    * @see https://tools.ietf.org/html/rfc7230#section-3.2.6
    * @param {string} name — metric name

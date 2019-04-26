@@ -62,26 +62,33 @@ Also you may access metrics values from JavaScript on a client:
 ### Table of Contents
 
 -   [ServerTiming](#servertiming)
-    -   [from](#from)
+    -   [addHook](#addhook)
         -   [Parameters](#parameters)
         -   [Examples](#examples)
-    -   [to](#to)
+    -   [removeHook](#removehook)
         -   [Parameters](#parameters-1)
-        -   [Examples](#examples-1)
-    -   [description](#description)
+    -   [from](#from)
         -   [Parameters](#parameters-2)
-    -   [duration](#duration)
+        -   [Examples](#examples-1)
+    -   [to](#to)
         -   [Parameters](#parameters-3)
-    -   [add](#add)
-        -   [Parameters](#parameters-4)
         -   [Examples](#examples-2)
-    -   [oldStyle](#oldstyle)
+    -   [description](#description)
+        -   [Parameters](#parameters-4)
+    -   [duration](#duration)
         -   [Parameters](#parameters-5)
-    -   [newStyle](#newstyle)
+    -   [add](#add)
         -   [Parameters](#parameters-6)
+        -   [Examples](#examples-3)
+    -   [calculateDurationSmart](#calculatedurationsmart)
+        -   [Parameters](#parameters-7)
+    -   [oldStyle](#oldstyle)
+        -   [Parameters](#parameters-8)
+    -   [newStyle](#newstyle)
+        -   [Parameters](#parameters-9)
 -   [index](#index)
-    -   [Parameters](#parameters-7)
-    -   [Examples](#examples-3)
+    -   [Parameters](#parameters-10)
+    -   [Examples](#examples-4)
 
 ## ServerTiming
 
@@ -92,6 +99,50 @@ Middleware for express.js to add Server Timing headers
 **Meta**
 
 -   **author**: Anton Nemtsev &lt;thesilentimp@gmail.com>
+
+### addHook
+
+Add callback to modify data before create and send headers
+
+#### Parameters
+
+-   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — hook name
+-   `callback` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** — function that may modify data before send headers
+-   `callbackIndex` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** index that will be used to sort callbacks before execution
+
+#### Examples
+
+Add hook to mutate the metrics
+
+
+```javascript
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
+const port = 3000;
+const app = express();
+app.use(serverTimingMiddleware);
+app.use(function (req, res, next) {
+  // If one measurement include other inside you may substract times
+  req.serverTiming.addHook('substractDataTimeFromRenderTime', function (metrics) {
+     const updated = { ...metrics };
+     if (updated.data && updated.render) {
+       const renderDuration  = req.serverTiming.calculateDurationSmart(updated.render);
+       const dataDuration  = req.serverTiming.calculateDurationSmart(updated.data);
+       updated.render.duration = Math.abs(renderDuration - dataDuration);
+     }
+     return updated;
+  });
+});
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+```
+
+### removeHook
+
+Remove callback with specific name
+
+#### Parameters
+
+-   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — hook name
 
 ### from
 
@@ -108,7 +159,8 @@ You may define only start time for metric
 
 
 ```javascript
-const serverTiming = require('server-timing-header');
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
 app.use(serverTimingMiddleware);
@@ -136,7 +188,8 @@ You may define only end time for metric
 
 
 ```javascript
-const serverTiming = require('server-timing-header');
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
 app.use(serverTimingMiddleware);
@@ -183,7 +236,8 @@ Add metric
 
 
 ```javascript
-const serverTiming = require('server-timing-header');
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
 app.use(serverTimingMiddleware);
@@ -193,6 +247,21 @@ app.get('/', function (req, res, next) {
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
+
+### calculateDurationSmart
+
+Calculate duration between two timestamps, if from or two is undefined — will use initialization time and current time to replace
+
+#### Parameters
+
+-   `metric` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** — object that contain metric information
+    -   `metric.name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — metric name
+    -   `metric.description` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — metric description
+    -   `metric.from` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;integer>** — start time [seconds, nanoseconds], if undefined, initialization time will be used
+    -   `metric.to` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;integer>** — end time [seconds, nanoseconds], if undefined, current timestamp will be used
+    -   `metric.duration` **integer** — time in milliseconds, if not undefined method will just return durations
+
+Returns **integer** duration in milliseconds
 
 ### oldStyle
 
@@ -204,6 +273,8 @@ Build server-timing header value by old specification
 -   `description` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** metric description
 -   `duration` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** metric duration
 
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — server-timing header value
+
 ### newStyle
 
 Build server-timing header value by current specification
@@ -213,6 +284,8 @@ Build server-timing header value by current specification
 -   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** metric name
 -   `description` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** metric description
 -   `duration` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** metric duration
+
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — server-timing header value
 
 ## index
 
