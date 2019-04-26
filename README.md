@@ -2,11 +2,11 @@
 
 Middleware for express.js to add server timing headers
 
-# Installation
+## Installation
 
     npm i -S server-timing-header
 
-# Usage
+## Usage
 
 You may measure time between two points:
 
@@ -58,6 +58,14 @@ Also you may access metrics values from JavaScript on a client:
 ```
 
 ![screenshot](console.png)
+
+## Support
+
+[Current support:](https://caniuse.com/#feat=server-timing) 
+
++ Chrome v.60
++ FF v.61 _(no dev tools screen)_
++ Safari v.12.1 _(no api support)_
 
 # Documentation
 
