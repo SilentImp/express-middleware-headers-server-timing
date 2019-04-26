@@ -11,7 +11,8 @@ Middleware for express.js to add server timing headers
 You may measure time between two points:
 
 ```javascript
-const serverTiming = require('server-timing-header');
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
 app.use(serverTimingMiddleware);
@@ -26,7 +27,8 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 Or just add a metric:
 
 ```javascript
-const serverTiming = require('server-timing-header');
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
 app.use(serverTimingMiddleware);
@@ -38,7 +40,9 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
 
 And see in the Chrome DevTools:
-![screenshot](devtools.png)
+![screenshot from chrome](devtools.png)
+Or Safari DevTools:
+![screenshot from safari](devtools-safari.png)
 Also you may access metrics values from JavaScript on a client:
 
 ```javascript
@@ -106,8 +110,8 @@ Add callback to modify data before create and send headers
 
 #### Parameters
 
--   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — hook name
--   `callback` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** — function that may modify data before send headers
+-   `name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** — hook name
+-   `callback` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** — function that may modify data before send headers
 -   `callbackIndex` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** index that will be used to sort callbacks before execution
 
 #### Examples
@@ -250,7 +254,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 ### calculateDurationSmart
 
-Calculate duration between two timestamps, if from or two is undefined — will use initialization time and current time to replace
+Calculate duration between two timestamps, if from or two is undefined — will use initialization time and current time to replace
 
 #### Parameters
 
