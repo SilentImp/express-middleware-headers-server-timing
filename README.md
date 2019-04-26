@@ -15,7 +15,7 @@ const express = require('express');
 const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
-app.use(serverTimingMiddleware);
+app.use(serverTimingMiddleware({sendHeaders: (process.env.NODE_ENV !== 'production')}));
 app.get('/', function (req, res, next) {
   req.serverTiming.from('db');
   // fetching data from database
@@ -31,7 +31,7 @@ const express = require('express');
 const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
-app.use(serverTimingMiddleware);
+app.use(serverTimingMiddleware());
 app.get('/', function (req, res, next) {
   // You got time metric from the external source
   req.serverTiming.add('cache', 'Cache Read', 23.2);
@@ -124,7 +124,7 @@ const express = require('express');
 const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
-app.use(serverTimingMiddleware);
+app.use(serverTimingMiddleware());
 app.use(function (req, res, next) {
   // If one measurement include other inside you may substract times
   req.serverTiming.addHook('substractDataTimeFromRenderTime', function (metrics) {
@@ -167,7 +167,7 @@ const express = require('express');
 const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
-app.use(serverTimingMiddleware);
+app.use(serverTimingMiddleware());
 app.get('/', function (req, res, next) {
   // If you define only start time for metric,
   // then as the end time will be used header sent time
@@ -196,7 +196,7 @@ const express = require('express');
 const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
-app.use(serverTimingMiddleware);
+app.use(serverTimingMiddleware());
 app.get('/', function (req, res, next) {
   // fetching data from database
   // If you define only end time for metric,
@@ -244,7 +244,7 @@ const express = require('express');
 const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
-app.use(serverTimingMiddleware);
+app.use(serverTimingMiddleware());
 app.get('/', function (req, res, next) {
   // You got time metric from the external source
   req.serverTiming.add('metric', 'metric description', 52.3);
@@ -298,9 +298,8 @@ make sure that we will send this headers before express finish request
 
 ### Parameters
 
--   `request`  
--   `response`  
--   `next`  
+-   `options` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** — middleware options (optional, default `{}`)
+    -   `options.sendHeaders` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** should middleware send headers (may be disabled for some environments) (optional, default `true`)
 
 ### Examples
 
@@ -308,10 +307,11 @@ How to add middleware
 
 
 ```javascript
-const serverTiming = require('server-timing-header');
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
 const port = 3000;
 const app = express();
-app.use(serverTimingMiddleware);
+app.use(serverTimingMiddleware());
 app.get('/', function (req, res, next) {
   req.serverTiming.from('db');
   // fetching data from database
@@ -319,3 +319,5 @@ app.get('/', function (req, res, next) {
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
+
+Returns **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** return express middleware

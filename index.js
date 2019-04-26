@@ -18,8 +18,9 @@ class ServerTiming {
    * Create server timing controller
    * @constructor
    * @param {string} [userAgent] — string that contain user agent description
+   * @param {boolean} [sendHeaders=true] - you may send or don't send headers depending on environment
    */
-  constructor(userAgent = "") {
+  constructor(userAgent = "", sendHeaders = true) {
     // Before 64 version Chrome support old server-timing
     // specification with different syntax
     const isChrome = userAgent.indexOf(" Chrome/") > -1;
@@ -38,6 +39,13 @@ class ServerTiming {
     this.initialized = process.hrtime();
 
     /**
+     * Should middleware send headers
+     * @private
+     * @type {boolean} - if false middleware will not add headers
+     */
+    this.sendHeaders = sendHeaders;
+
+    /**
      * @private
      * @type {object} - We will store time metrics in this object
      */
@@ -50,9 +58,12 @@ class ServerTiming {
     this.hooks = [];
 
     // We should keep consistent context for non static methods
-    this.addHeaders = this.addHeaders.bind(this);
-    this.from = this.from.bind(this);
-    this.to = this.to.bind(this);
+    Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(name => {
+      const method = this[name];
+      if (name !== "constructor" && typeof method === "function") {
+        this[name] = method.bind(this);
+      }
+    });
   }
 
   /**
@@ -66,7 +77,7 @@ class ServerTiming {
    * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
-   * app.use(serverTimingMiddleware);
+   * app.use(serverTimingMiddleware());
    * app.use(function (req, res, next) {
    *   // If one measurement include other inside you may substract times
    *   req.serverTiming.addHook('substractDataTimeFromRenderTime', function (metrics) {
@@ -115,7 +126,7 @@ class ServerTiming {
    * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
-   * app.use(serverTimingMiddleware);
+   * app.use(serverTimingMiddleware());
    * app.get('/', function (req, res, next) {
    *   // If you define only start time for metric,
    *   // then as the end time will be used header sent time
@@ -140,7 +151,7 @@ class ServerTiming {
    * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
-   * app.use(serverTimingMiddleware);
+   * app.use(serverTimingMiddleware());
    * app.get('/', function (req, res, next) {
    *   // fetching data from database
    *   // If you define only end time for metric,
@@ -206,7 +217,7 @@ class ServerTiming {
    * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
-   * app.use(serverTimingMiddleware);
+   * app.use(serverTimingMiddleware());
    * app.get('/', function (req, res, next) {
    *   // You got time metric from the external source
    *   req.serverTiming.add('metric', 'metric description', 52.3);
@@ -231,7 +242,7 @@ class ServerTiming {
    * const serverTimingMiddleware = require('server-timing-header');
    * const port = 3000;
    * const app = express();
-   * app.use(serverTimingMiddleware);
+   * app.use(serverTimingMiddleware());
    * app.get('/', function (req, res, next) {
    *   req.serverTiming.from('db');
    *   // fetching data from database
@@ -240,6 +251,7 @@ class ServerTiming {
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
   addHeaders(response) {
+    if (!this.addHeaders) return;
     if (response.headerSent) throw new Error(HEADERS_SENT);
     const updatedMetrics = this.hooks
       .sort(({ index: indexA }, { index: indexB }) => indexA - indexB)
@@ -373,11 +385,15 @@ class ServerTiming {
  * Express middleware add serverTiming to request and
  * make sure that we will send this headers before express finish request
  * @exports serverTimingMiddleware
+ * @param {object} [options] — middleware options
+ * @param {boolean} [options.sendHeaders] - should middleware send headers (may be disabled for some environments)
+ * @return {function} - return express middleware
  * @example <caption>How to add middleware</caption>
- * const serverTiming = require('server-timing-header');
+ * const express = require('express');
+ * const serverTimingMiddleware = require('server-timing-header');
  * const port = 3000;
  * const app = express();
- * app.use(serverTimingMiddleware);
+ * app.use(serverTimingMiddleware());
  * app.get('/', function (req, res, next) {
  *   req.serverTiming.from('db');
  *   // fetching data from database
@@ -385,14 +401,22 @@ class ServerTiming {
  * });
  * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
  */
-module.exports = function serverTimingMiddleware(request, response, next) {
-  // Adding controller to request object
-  request.serverTiming = new ServerTiming(request.header("user-agent"));
+module.exports = ({ sendHeaders = true } = {}) => {
+  function serverTimingMiddleware(request, response, next) {
+    // Adding controller to request object
+    request.serverTiming = new ServerTiming(
+      request.header("user-agent"),
+      sendHeaders
+    );
 
-  // We should send server-timing headers before headers are sent
-  onHeaders(response, () => {
-    request.serverTiming.addHeaders(response);
-  });
+    // We should send server-timing headers before headers are sent
+    if (sendHeaders)
+      onHeaders(response, () => {
+        request.serverTiming.addHeaders(response);
+      });
 
-  next();
+    next();
+  }
+
+  return serverTimingMiddleware;
 };
