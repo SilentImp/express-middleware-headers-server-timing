@@ -6,11 +6,17 @@
   "scripts": {
     "postversion": "git push && git push --tags",
     "version": "git add . -A",
+    "premajor": "npm t",
     "major": "npm version major && npm publish --tag latest --access public",
+    "preminor": "npm t",
     "minor": "npm version minor && npm publish --tag latest --access public",
+    "prepatch": "npm t",
     "patch": "npm version patch && npm publish --tag latest --access public",
+    "predopreminor": "npm t",
     "dopreminor": "npm version preminor && npm publish --tag next --access public",
+    "predopremajor": "npm t",
     "dopremajor": "npm version premajor && npm publish --tag next --access public",
+    "predoprepatch": "npm t",
     "doprepatch": "npm version prepatch && npm publish --tag next --access public",
     "doc": "documentation readme index.js -s 'Documentation'",
     "lint": "eslint index.js --fix",
@@ -25,7 +31,7 @@
     "*.js": [
       "eslint --fix",
       "git add",
-      "npm t -- --onlyChanged"
+      "npm t -- --onlyChanged --passWithNoTests"
     ]
   },
   "repository": {
