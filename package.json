@@ -4,22 +4,24 @@
   "description": "Allow you add metrics via Server-Timing header",
   "main": "index.js",
   "scripts": {
+    "checks": "npm run lint && npm run size && npm t",
+    "size": "size-limit",
     "postversion": "git push && git push --tags",
     "version": "git add . -A",
-    "premajor": "npm t",
+    "premajor": "npm checks",
     "major": "npm version major && npm publish --tag latest --access public",
-    "preminor": "npm t",
+    "preminor": "npm checks",
     "minor": "npm version minor && npm publish --tag latest --access public",
-    "prepatch": "npm t",
+    "prepatch": "npm checks",
     "patch": "npm version patch && npm publish --tag latest --access public",
-    "predopreminor": "npm t",
+    "predopreminor": "npm checks",
     "dopreminor": "npm version preminor && npm publish --tag next --access public",
-    "predopremajor": "npm t",
+    "predopremajor": "npm checks",
     "dopremajor": "npm version premajor && npm publish --tag next --access public",
-    "predoprepatch": "npm t",
+    "predoprepatch": "npm checks",
     "doprepatch": "npm version prepatch && npm publish --tag next --access public",
     "doc": "documentation readme index.js -s 'Documentation'",
-    "lint": "eslint index.js --fix",
+    "lint": "eslint *.js --fix",
     "test": "jest"
   },
   "husky": {
@@ -38,6 +40,12 @@
     "type": "git",
     "url": "git+https://github.com/SilentImp/express-middleware-headers-server-timing.git"
   },
+  "size-limit": [
+    {
+      "limit": "3 KB",
+      "path": "index.js"
+    }
+  ],
   "keywords": [
     "expressjs",
     "performance",
@@ -61,6 +69,8 @@
     "on-headers": "^1.0.2"
   },
   "devDependencies": {
+    "@size-limit/preset-small-lib": "^2.1.1",
+    "diff": ">=3.5.0",
     "documentation": "^10.1.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
@@ -74,7 +84,6 @@
     "jest": "^24.9.0",
     "jest-express": "^1.10.1",
     "lint-staged": "^8.1.5",
-    "prettier": "^1.17.0",
-    "diff": ">=3.5.0"
+    "prettier": "^1.17.0"
   }
 }
