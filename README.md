@@ -1,14 +1,48 @@
-# Abstract
+# Server-Timing
 
-Middleware for express.js to add server timing headers.
+This is middleware for [Express](https://expressjs.com/) that allow you monitor server-side performance in the browser with use of [Service-Timing](https://w3c.github.io/server-timing/) headers.
 
-## Installation
-
-    npm i -S server-timing-header
+* Great for identifying server-side performance issues.
+* Supported in Chrome, Safari and Mozilla.
+* *1.91 KB* with all dependencies, minified and gzipped.
+* Tested.
 
 ## Usage
 
-You may measure time between two points:
+**Step 1:** install package.
+
+    npm i -S server-timing-header
+
+**Step 2:** add middleware.
+
+```diff javascript
++ const serverTimingMiddleware = require('server-timing-header');
+const express = require('express');
+const app = express();
+
++ app.use(serverTimingMiddleware({sendHeaders: (process.env.NODE_ENV !== 'production')}));
+```
+
+**Step 3:** measure how long take to get data.
+
+```diff javascript
+app.get('/', function (req, res, next) {
++  req.serverTiming.from('db');
+  // fetching data from database
++  req.serverTiming.to('db');
+  // …
+});
+```
+
+**Step 4:** check Server-Timing in the network tab of Chrome DevTools.
+
+![screenshot from chrome](devtools.png)
+
+## Examples
+
+<details><summary><b>Measure time between two points</b></summary>
+
+Most common use-case — measure time between two points.
 
 ```javascript
 const express = require('express');
@@ -24,7 +58,11 @@ app.get('/', function (req, res, next) {
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
 
-Or just add a metric:
+</details>
+
+<details><summary><b>Add metric manually</b></summary>
+
+In case we recieve timing from external source we may just add metric we need.
 
 ```javascript
 const express = require('express');
@@ -39,11 +77,56 @@ app.get('/', function (req, res, next) {
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
 
-And see in the Chrome DevTools:
+</details>
+
+<details><summary><b>Add hook to modify data before send</b></summary>
+
+In some cases you may need to modify data before send it to browser. In example bellow we can't separate time of rendering and time of acquiring data. To make render time more precise we may devide time we use to get data from the rendering time.
+
+```javascript
+const express = require('express');
+const serverTimingMiddleware = require('server-timing-header');
+const port = 3000;
+const app = express();
+app.use(serverTimingMiddleware());
+app.get('/', function (req, res, next) {
+  req.serverTiming.from('render');
+    req.serverTiming.from('data');
+    // fetching data from database
+    req.serverTiming.to('data');
+  req.serverTiming.to('render');
+});
+app.use(function (req, res, next) {
+  // If one measurement include other inside you may substract times
+  req.serverTiming.addHook('substractDataTimeFromRenderTime', function (metrics) {
+    const updated = { ...metrics };
+    if (updated.data && updated.render) {
+      const renderDuration  = req.serverTiming.calculateDurationSmart(updated.render);
+      const dataDuration  = req.serverTiming.calculateDurationSmart(updated.data);
+      updated.render.duration = Math.abs(renderDuration - dataDuration);
+    }
+    return updated;
+  });
+});
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+```
+</details>
+
+<details><summary><b>Result in the Chrome DevTools</b></summary>
+
 ![screenshot from chrome](devtools.png)
-Or Safari DevTools:
+
+</details>
+
+<details><summary><b>Result in the Safari DevTools</b></summary>
+
 ![screenshot from safari](devtools-safari.png)
-Also you may access metrics values from JavaScript on a client:
+
+</details>
+
+<details><summary><b>Access metrics values from JavaScript on a client</b></summary>
+
+You may access data from JavaScript with help of [PerformanceServerTiming](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceServerTiming).
 
 ```javascript
 ['navigation', 'resource']
@@ -58,6 +141,7 @@ Also you may access metrics values from JavaScript on a client:
 ```
 
 ![screenshot](console.png)
+</details>
 
 ## Support
 
@@ -66,10 +150,6 @@ Also you may access metrics values from JavaScript on a client:
 + Chrome v.60
 + FF v.61 _(no dev tools screen)_
 + Safari v.12.1 _(no api support)_
-
-## Size
-
-*1.91 KB* with all dependencies, minified and gzipped
 
 # Documentation
 
