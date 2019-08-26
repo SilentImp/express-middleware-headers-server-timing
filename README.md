@@ -1,4 +1,4 @@
-# Server-Timing
+# Server-Timing Header
 
 This is middleware for [Express](https://expressjs.com/) that allow you monitor server-side performance in the browser with use of [Service-Timing](https://w3c.github.io/server-timing/) headers.
 
@@ -9,7 +9,7 @@ This is middleware for [Express](https://expressjs.com/) that allow you monitor 
 
 ## Usage
 
-**Step 1:** install package.
+**Step 1:** install [package](https://www.npmjs.com/package/server-timing-header).
 
     npm i -S server-timing-header
 
