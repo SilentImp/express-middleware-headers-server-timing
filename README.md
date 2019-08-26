@@ -1,6 +1,6 @@
 # Abstract
 
-Middleware for express.js to add server timing headers
+Middleware for express.js to add server timing headers.
 
 ## Installation
 
@@ -61,7 +61,7 @@ Also you may access metrics values from JavaScript on a client:
 
 ## Support
 
-[Current support:](https://caniuse.com/#feat=server-timing) 
+[Current support:](https://caniuse.com/#feat=server-timing)
 
 + Chrome v.60
 + FF v.61 _(no dev tools screen)_
