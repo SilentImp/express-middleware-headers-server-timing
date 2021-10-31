@@ -4,7 +4,7 @@ This is middleware for [Express](https://expressjs.com/) that allow you monitor 
 
 -   Great for identifying server-side performance issues.
 -   Supported in Chrome, Safari and Mozilla.
--   _1.91 KB_ with all dependencies, minified and gzipped.
+-   _1.52 KB_ with all dependencies, minified and gzipped.
 -   Tested.
 
 ## Usage
