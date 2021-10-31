@@ -66,21 +66,18 @@
     "on-headers": "^1.0.2"
   },
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^2.1.1",
-    "diff": ">=3.5.0",
-    "documentation": "^10.1.0",
-    "eslint": "^5.16.0",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-config-prettier": "^4.2.0",
-    "eslint-plugin-import": "^2.17.2",
-    "eslint-plugin-jest": "^22.15.2",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-prettier": "^3.0.1",
-    "eslint-plugin-react": "^7.12.4",
+    "@size-limit/preset-small-lib": "^6.0.4",
+    "documentation": "^3.0.4",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-jest": "^25.2.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.1",
     "husky": "^7.0.4",
-    "jest": "^24.9.0",
-    "jest-express": "^1.10.1",
-    "lint-staged": "^8.1.5",
-    "prettier": "^1.17.0"
+    "jest": "^27.3.1",
+    "jest-express": "^1.12.0",
+    "lint-staged": "^11.2.6",
+    "prettier": "^2.4.1"
   }
 }

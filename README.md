@@ -2,10 +2,10 @@
 
 This is middleware for [Express](https://expressjs.com/) that allow you monitor server-side performance in the browser with use of [Service-Timing](https://w3c.github.io/server-timing/) headers.
 
-* Great for identifying server-side performance issues.
-* Supported in Chrome, Safari and Mozilla.
-* *1.91 KB* with all dependencies, minified and gzipped.
-* Tested.
+-   Great for identifying server-side performance issues.
+-   Supported in Chrome, Safari and Mozilla.
+-   _1.91 KB_ with all dependencies, minified and gzipped.
+-   Tested.
 
 ## Usage
 
@@ -110,6 +110,7 @@ app.use(function (req, res, next) {
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
+
 </details>
 
 <details><summary><b>Result in the Chrome DevTools</b></summary>
@@ -141,15 +142,16 @@ You may access data from JavaScript with help of [PerformanceServerTiming](https
 ```
 
 ![screenshot](console.png)
+
 </details>
 
 ## Support
 
 [Current support:](https://caniuse.com/#feat=server-timing)
 
-+ Chrome v.60
-+ FF v.61 _(no dev tools screen)_
-+ Safari v.12.1 _(no api support)_
+-   Chrome v.60
+-   FF v.63
+-   Safari v.12.1 _(no api support)_
 
 # Documentation
 
