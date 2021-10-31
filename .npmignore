@@ -8,3 +8,4 @@ coverage
 *.png
 CONTRIBUTING.md
 *.test.js
+jest.config.js
