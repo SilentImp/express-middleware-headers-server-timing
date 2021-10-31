@@ -219,6 +219,33 @@ describe('server Timing middleware should', () => {
     )
   })
 
+  it('would not rewrite headers added by other application', () => {
+    expect.assertions(3)
+    const next = jest.fn()
+    const request = new Request()
+    const response = new Response()
+    const presentHeader = 'db;dur=53, app;dur=47.2'
+    response.headers = {
+      'server-timing': [
+        presentHeader
+      ]
+    }
+
+    middleware({ sendHeaders: false })(request, response, next)
+
+    request.serverTiming.add(
+      'userData',
+      'getting user data from user microservice',
+      123
+    )
+    request.serverTiming.duration('userData', 234)
+    request.serverTiming.addHeaders(response)
+
+    expect(response.headers).toHaveProperty('server-timing')
+    expect(response.headers['server-timing']).toHaveLength(2)
+    expect(response.headers['server-timing'].includes(presentHeader)).toBe(true)
+  })
+
   it('allow add hook to modify the data before add headers', () => {
     expect.assertions(2)
     const next = jest.fn()

@@ -259,7 +259,7 @@ class ServerTiming {
       .reduce((metrics, callback) => {
         return callback(metrics)
       }, this.metrics)
-    const metrics = Object.entries(updatedMetrics).reduce(
+    let metrics = Object.entries(updatedMetrics).reduce(
       (collector, element) => {
         const [name, { from, to, description, duration }] = element
         collector.push(
@@ -278,6 +278,17 @@ class ServerTiming {
       },
       []
     )
+
+    if (
+      Array.isArray(response.headers['server-timing']) &&
+      response.headers['server-timing'].length > 0
+    ) {
+      metrics = [
+        ...response.headers['server-timing'],
+        ...metrics
+      ]
+    }
+
     if (metrics.length > 0) response.set(HEADER_NAME, metrics)
     this.metrics = {}
   }
