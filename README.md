@@ -36,7 +36,7 @@ app.get('/', function (req, res, next) {
 
 **Step 4:** check Server-Timing in the network tab of Chrome DevTools.
 
-![screenshot from chrome](devtools.png)
+![screenshot from chrome](https://raw.githubusercontent.com/SilentImp/express-middleware-headers-server-timing/master/devtools.png)
 
 ## Examples
 
@@ -115,13 +115,13 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 <details><summary><b>Result in the Chrome DevTools</b></summary>
 
-![screenshot from chrome](devtools.png)
+![screenshot from chrome](https://raw.githubusercontent.com/SilentImp/express-middleware-headers-server-timing/master/devtools.png)
 
 </details>
 
 <details><summary><b>Result in the Safari DevTools</b></summary>
 
-![screenshot from safari](devtools-safari.png)
+![screenshot from safari](https://raw.githubusercontent.com/SilentImp/express-middleware-headers-server-timing/master/devtools-safari.png)
 
 </details>
 
@@ -141,7 +141,7 @@ You may access data from JavaScript with help of [PerformanceServerTiming](https
       })
 ```
 
-![screenshot](console.png)
+![screenshot](https://raw.githubusercontent.com/SilentImp/express-middleware-headers-server-timing/master/console.png)
 
 </details>
 
