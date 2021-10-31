@@ -1,7 +1,7 @@
 module.exports = {
   displayName: {
-    name: "Server Timing",
-    color: "blue"
+    name: 'Server Timing',
+    color: 'blue'
   },
   collectCoverage: true,
   coverageThreshold: {
@@ -9,4 +9,4 @@ module.exports = {
       lines: 90
     }
   }
-};
+}

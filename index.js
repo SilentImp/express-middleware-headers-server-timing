@@ -1,8 +1,8 @@
-const onHeaders = require("on-headers");
+const onHeaders = require('on-headers')
 
-const HEADER_NAME = "server-timing";
-const INVALID_NAME = "Name contain forbidden symbols";
-const HEADERS_SENT = "Headers was already sent and we can not add new headers";
+const HEADER_NAME = 'server-timing'
+const INVALID_NAME = 'Name contain forbidden symbols'
+const HEADERS_SENT = 'Headers was already sent and we can not add new headers'
 
 /**
  * Middleware for express.js to add Server Timing headers
@@ -20,15 +20,15 @@ class ServerTiming {
    * @param {string} [userAgent] — string that contain user agent description
    * @param {boolean} [sendHeaders=true] - you may send or don't send headers depending on environment
    */
-  constructor(userAgent = "", sendHeaders = true) {
+  constructor (userAgent = '', sendHeaders = true) {
     // Before 64 version Chrome support old server-timing
     // specification with different syntax
-    const isChrome = userAgent.indexOf(" Chrome/") > -1;
-    const chromeData = / Chrome\/([\d]+)./gi.exec(userAgent);
+    const isChrome = userAgent.indexOf(' Chrome/') > -1
+    const chromeData = / Chrome\/([\d]+)./gi.exec(userAgent)
     const chromeVersion =
-      chromeData === null ? null : parseInt(chromeData[1], 10);
-    const isCanary = isChrome && chromeVersion > 64;
-    this.oldSpecification = isChrome && !isCanary;
+      chromeData === null ? null : parseInt(chromeData[1], 10)
+    const isCanary = isChrome && chromeVersion > 64
+    this.oldSpecification = isChrome && !isCanary
 
     /**
      * If start time is not specified for metric
@@ -36,34 +36,34 @@ class ServerTiming {
      * @private
      * @type {integer[]} - time of middleware initialization [seconds, nanoseconds]
      */
-    this.initialized = process.hrtime();
+    this.initialized = process.hrtime()
 
     /**
      * Should middleware send headers
      * @private
      * @type {boolean} - if false middleware will not add headers
      */
-    this.sendHeaders = sendHeaders;
+    this.sendHeaders = sendHeaders
 
     /**
      * @private
      * @type {object} - We will store time metrics in this object
      */
-    this.metrics = {};
+    this.metrics = {}
 
     /**
      * @private
      * @type {array} - Array of callbacks
      */
-    this.hooks = [];
+    this.hooks = []
 
     // We should keep consistent context for non static methods
     Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(name => {
-      const method = this[name];
-      if (name !== "constructor" && typeof method === "function") {
-        this[name] = method.bind(this);
+      const method = this[name]
+      if (name !== 'constructor' && typeof method === 'function') {
+        this[name] = method.bind(this)
       }
-    });
+    })
   }
 
   /**
@@ -92,16 +92,16 @@ class ServerTiming {
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  addHook(name, callback, callbackIndex) {
-    let index = callbackIndex;
+  addHook (name, callback, callbackIndex) {
+    let index = callbackIndex
     if (index === undefined) {
-      index = this.hooks.length + 1;
+      index = this.hooks.length + 1
     }
     this.hooks.push({
       name,
       callback,
       index
-    });
+    })
   }
 
   /**
@@ -109,10 +109,10 @@ class ServerTiming {
    * @public
    * @param {string} name — hook name
    */
-  removeHook(name) {
+  removeHook (name) {
     this.hooks = this.hooks.filter(
       ({ name: callbackName }) => callbackName !== name
-    );
+    )
   }
 
   /**
@@ -135,9 +135,9 @@ class ServerTiming {
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  from(name, description) {
-    this.set(name, "from", process.hrtime());
-    if (description) this.description.call(this, name, description);
+  from (name, description) {
+    this.set(name, 'from', process.hrtime())
+    if (description) this.description(name, description)
   }
 
   /**
@@ -160,9 +160,9 @@ class ServerTiming {
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  to(name, description) {
-    this.set(name, "to", process.hrtime());
-    if (description) this.description.call(this, name, description);
+  to (name, description) {
+    this.set(name, 'to', process.hrtime())
+    if (description) this.description(name, description)
   }
 
   /**
@@ -172,8 +172,8 @@ class ServerTiming {
    * @param {string} description — description of the metric
    * @throw {Error} — throw an error if name is not valid
    */
-  description(name, description) {
-    this.set(name, "description", description);
+  description (name, description) {
+    this.set(name, 'description', description)
   }
 
   /**
@@ -183,8 +183,8 @@ class ServerTiming {
    * @param {float} duration — duration of the metric
    * @throw {Error} — throw an error if name is not valid
    */
-  duration(name, duration) {
-    this.set(name, "duration", duration);
+  duration (name, duration) {
+    this.set(name, 'duration', duration)
   }
 
   /**
@@ -197,12 +197,12 @@ class ServerTiming {
    * @param {mixed} value — property value
    * @throw {Error} — throw an error if name contains invalid characters
    */
-  set(name, field, value) {
-    if (!ServerTiming.nameIsValid(name)) throw new Error(INVALID_NAME);
-    if (typeof this.metrics[name] === "undefined") {
-      this.metrics[name] = { [[field]]: value };
+  set (name, field, value) {
+    if (!ServerTiming.nameIsValid(name)) throw new Error(INVALID_NAME)
+    if (typeof this.metrics[name] === 'undefined') {
+      this.metrics[name] = { [[field]]: value }
     } else {
-      this.metrics[name][field] = value;
+      this.metrics[name][field] = value
     }
   }
 
@@ -224,12 +224,12 @@ class ServerTiming {
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  add(name, description, duration = 0.0) {
-    if (!ServerTiming.nameIsValid(name)) throw new Error(INVALID_NAME);
+  add (name, description, duration = 0.0) {
+    if (!ServerTiming.nameIsValid(name)) throw new Error(INVALID_NAME)
     this.metrics[name] = {
       description,
       duration
-    };
+    }
   }
 
   /**
@@ -250,18 +250,18 @@ class ServerTiming {
    * });
    * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
    */
-  addHeaders(response) {
-    if (!this.addHeaders) return;
-    if (response.headerSent) throw new Error(HEADERS_SENT);
+  addHeaders (response) {
+    if (!this.addHeaders) return
+    if (response.headerSent) throw new Error(HEADERS_SENT)
     const updatedMetrics = this.hooks
       .sort(({ index: indexA }, { index: indexB }) => indexA - indexB)
       .map(({ callback }) => callback)
       .reduce((metrics, callback) => {
-        return callback(metrics);
-      }, this.metrics);
+        return callback(metrics)
+      }, this.metrics)
     const metrics = Object.entries(updatedMetrics).reduce(
       (collector, element) => {
-        const [name, { from, to, description, duration }] = element;
+        const [name, { from, to, description, duration }] = element
         collector.push(
           ServerTiming.buildHeader(
             {
@@ -273,13 +273,13 @@ class ServerTiming {
             },
             this.oldSpecification
           )
-        );
-        return collector;
+        )
+        return collector
       },
       []
-    );
-    if (metrics.length > 0) response.set(HEADER_NAME, metrics);
-    this.metrics = {};
+    )
+    if (metrics.length > 0) response.set(HEADER_NAME, metrics)
+    this.metrics = {}
   }
 
   /**
@@ -289,10 +289,10 @@ class ServerTiming {
    * @param {string} duration - metric duration
    * @return {string} — server-timing header value
    */
-  static oldStyle(name, description, duration) {
-    return `${name}${typeof duration !== "undefined" ? `=${duration}` : ""}${
-      typeof description !== "undefined" ? `; "${description}"` : ""
-    }`;
+  static oldStyle (name, description, duration) {
+    return `${name}${typeof duration !== 'undefined' ? `=${duration}` : ''}${
+      typeof description !== 'undefined' ? `; "${description}"` : ''
+    }`
   }
 
   /**
@@ -302,10 +302,10 @@ class ServerTiming {
    * @param {string} duration - metric duration
    * @return {string} — server-timing header value
    */
-  static newStyle(name, description, duration) {
+  static newStyle (name, description, duration) {
     return `${name}${
-      typeof description !== "undefined" ? `;desc="${description}"` : ""
-    }${typeof duration !== "undefined" ? `;dur=${duration}` : ""}`;
+      typeof description !== 'undefined' ? `;desc="${description}"` : ''
+    }${typeof duration !== 'undefined' ? `;dur=${duration}` : ''}`
   }
 
   /**
@@ -319,14 +319,14 @@ class ServerTiming {
    * @param {integer[]} metric.to — end time [seconds, nanoseconds]
    * @return {string} — header value with timings for specific metric
    */
-  static buildHeader(
+  static buildHeader (
     { name, description, duration, from, to },
     oldSpecification = false
   ) {
-    const time = duration || ServerTiming.calculateDuration(from, to);
+    const time = duration || ServerTiming.calculateDuration(from, to)
     return oldSpecification
       ? ServerTiming.oldStyle(name, description, time)
-      : ServerTiming.newStyle(name, description, time);
+      : ServerTiming.newStyle(name, description, time)
   }
 
   /**
@@ -340,12 +340,12 @@ class ServerTiming {
    * @param {integer} metric.duration — time in milliseconds, if not undefined method will just return durations
    * @return {integer} - duration in milliseconds
    */
-  calculateDurationSmart(metric) {
-    const fromLabel = metric.from || this.initialized;
-    const toLabel = metric.to || process.hrtime();
+  calculateDurationSmart (metric) {
+    const fromLabel = metric.from || this.initialized
+    const toLabel = metric.to || process.hrtime()
     return (
       metric.duration || ServerTiming.calculateDuration(fromLabel, toLabel)
-    );
+    )
   }
 
   /**
@@ -356,10 +356,10 @@ class ServerTiming {
    * @param {integer[]} to — end time [seconds, nanoseconds]
    * @return {integer} - duration in milliseconds
    */
-  static calculateDuration(from, to) {
-    const fromTime = parseInt(from[0] * 1e3 + from[1] * 1e-6, 10);
-    const toTime = parseInt(to[0] * 1e3 + to[1] * 1e-6, 10);
-    return Math.abs(toTime - fromTime);
+  static calculateDuration (from, to) {
+    const fromTime = parseInt(from[0] * 1e3 + from[1] * 1e-6, 10)
+    const toTime = parseInt(to[0] * 1e3 + to[1] * 1e-6, 10)
+    return Math.abs(toTime - fromTime)
   }
 
   /**
@@ -376,8 +376,8 @@ class ServerTiming {
    * @param {string} name — metric name
    * @return {boolean} — is name valid
    */
-  static nameIsValid(name) {
-    return /^[!#$%&'*+\-.^_`|~0-9a-z]+$/gi.test(name);
+  static nameIsValid (name) {
+    return /^[!#$%&'*+\-.^_`|~0-9a-z]+$/gi.test(name)
   }
 }
 
@@ -402,21 +402,22 @@ class ServerTiming {
  * app.listen(port, () => console.log(`Example app listening on port ${port}!`));
  */
 module.exports = ({ sendHeaders = true } = {}) => {
-  function serverTimingMiddleware(request, response, next) {
+  function serverTimingMiddleware (request, response, next) {
     // Adding controller to request object
     request.serverTiming = new ServerTiming(
-      request.header("user-agent"),
+      request.header('user-agent'),
       sendHeaders
-    );
+    )
 
     // We should send server-timing headers before headers are sent
-    if (sendHeaders)
+    if (sendHeaders) {
       onHeaders(response, () => {
-        request.serverTiming.addHeaders(response);
-      });
+        request.serverTiming.addHeaders(response)
+      })
+    }
 
-    next();
+    next()
   }
 
-  return serverTimingMiddleware;
-};
+  return serverTimingMiddleware
+}
