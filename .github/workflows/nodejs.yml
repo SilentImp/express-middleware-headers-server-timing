@@ -1,4 +1,4 @@
-name: Node CI
+name: Testing middleware
 
 on:
   pull_request:
@@ -9,14 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js 10.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: '10.x'
-    - name: npm install, and run test
-      run: |
-        npm ci
-        npm run checks
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - name: Use Node 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: install dependencies
+        run: npm ci
+      - name: run tests
+        run: npm run checks
+      - run: echo "This job's status is ${{ job.status }}."
