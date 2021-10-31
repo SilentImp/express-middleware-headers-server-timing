@@ -1,6 +1,6 @@
 {
   "name": "server-timing-header",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "Allow you add metrics via Server-Timing header",
   "main": "index.js",
   "scripts": {
